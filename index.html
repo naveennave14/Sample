@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>✨ Magical Birthday Wish ✨</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Chewy&family=Poppins:wght@400;600&display=swap');
+
+        :root {
+            --primary-bg: linear-gradient(to bottom, #1a0b2e, #4a154b, #911a6c, #ff4b72);
+            --cake-plate: #dfdfdf;
+            --cake-bottom: #f7aef8;
+            --cake-top: #b388ff;
+            --cake-icing: #ffffff;
+            --candle-body: #ffeb3b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+        }
+
+        body {
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            background: var(--primary-bg);
+            font-family: 'Poppins', sans-serif;
+            color: white;
+            position: relative;
+        }
+
+        /* Canvas Layers */
+        #magic-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        #balloon-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        /* UI Overlays */
+        .controls {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 100;
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid white;
+            color: white;
+            padding: 10px 16px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 600;
+            font-family: 'Poppins', sans-serif;
+            backdrop-filter: blur(5px);
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 1px;
+        }
+
+        .btn:hover {
+            background: white;
+            color: #ff4b72;
+            transform: translateY(-2px);
+        }
+
+        .btn:active {
+            transform: scale(0.95);
+        }
+
+        .main-stage {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        /* Typography & Message */
+        .message-box {
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .typewriter {
+            font-family: 'Chewy', cursive;
+            font-size: 4.5rem;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.6), 4px 4px 0px #ff4b72;
+            color: #fff;
+            letter-spacing: 3px;
+            text-align: center;
+        }
+
+        @media (max-width: 768px) {
+            .typewriter { font-size: 2.8rem; }
+            .message-box { height: 80px; }
+        }
+
+        /* Magical Cake */
+        .cake-wrapper {
+            position: relative;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+            margin-bottom: 40px;
+        }
+
+        .cake-wrapper:hover {
+            transform: scale(1.03);
+        }
+
+        .cake {
+            position: relative;
+            width: 250px;
+            height: 200px;
+        }
+
+        .plate {
+            width: 300px;
+            height: 20px;
+            background: var(--cake-plate);
+            border-radius: 50%;
+            position: absolute;
+            bottom: -10px;
+            left: -25px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+        }
+
+        .layer {
+            position: absolute;
+            width: 250px;
+            border-radius: 20px 20px 0 0;
+        }
+
+        .layer-bottom {
+            height: 90px;
+            bottom: 0;
+            background: var(--cake-bottom);
+            border-bottom: 5px solid #d487d6;
+        }
+
+        .layer-top {
+            height: 80px;
+            bottom: 90px;
+            width: 210px;
+            left: 20px;
+            background: var(--cake-top);
+        }
+
+        /* Sprinkle elements via CSS stripes */
+        .layer-bottom::after, .layer-top::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-image: 
+                radial-gradient(circle at 20% 30%, #fff 4px, transparent 4px),
+                radial-gradient(circle at 80% 20%, #ffeb3b 4px, transparent 4px),
+                radial-gradient(circle at 40% 70%, #00e676 4px, transparent 4px),
+                radial-gradient(circle at 70% 60%, #fff 4px, transparent 4px);
+            opacity: 0.6;
+        }
+
+        .icing {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 30px;
+            background: var(--cake-icing);
+            border-radius: 20px 20px 10px 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .icing-drip {
+            position: absolute;
+            top: 20px;
+            width: 25px;
+            height: 30px;
+            background: var(--cake-icing);
+            border-radius: 0 0 15px 15px;
+        }
+        .drip-1 { left: 15px; height: 35px; }
+        .drip-2 { left: 60px; height: 45px; }
+        .drip-3 { left: 110px; height: 25px; }
+        .drip-4 { left: 150px; height: 40px; }
+        .drip-5 { left: 180px; height: 20px; }
+
+        /* Candles */
+        .candles {
+            position: absolute;
+            top: -50px;
+            width: 100%;
+            height: 50px;
+            display: flex;
+            justify-content: space-evenly;
+            padding: 0 40px;
+        }
+
+        .candle {
+            width: 14px;
+            height: 50px;
+            background: repeating-linear-gradient(45deg, var(--candle-body), var(--candle-body) 10px, #ff4081 10px, #ff4081 20px);
+            border-radius: 5px 5px 0 0;
+            position: relative;
+        }
+
+        .wick {
+            position: absolute;
+            top: -8px;
+            left: 6px;
+            width: 2px;
+            height: 8px;
+            background: #444;
+        }
+
+        .flame {
+            position: absolute;
+            top: -24px;
+            left: 1px;
+            width: 12px;
+            height: 20px;
+            background: #ff9800;
+            border-radius: 50% 50% 20% 20%;
+            box-shadow: 0 0 15px 5px rgba(255, 152, 0, 0.7);
+            animation: flicker 0.6s infinite alternate ease-in-out;
+            transform-origin: bottom center;
+        }
+
+        .flame::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 2px;
+            width: 8px;
+            height: 12px;
+            background: #ffeb3b;
+            border-radius: 50% 50% 20% 20%;
+        }
+
+        @keyframes flicker {
+            0% { transform: scale(1) rotate(-3deg); }
+            100% { transform: scale(1.1) rotate(3deg); }
+        }
+
+        .smoke {
+            position: absolute;
+            top: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 10px;
+            height: 10px;
+            background: rgba(255,255,255,0.7);
+            border-radius: 50%;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .extinguished .flame {
+            display: none;
+        }
+
+        .extinguished .smoke {
+            animation: puff 1.5s ease-out forwards;
+        }
+
+        @keyframes puff {
+            0% { transform: translate(-50%, 0) scale(0.5); opacity: 1; }
+            50% { transform: translate(-50%, -40px) scale(3); opacity: 0.5; filter: blur(4px); }
+            100% { transform: translate(-50%, -80px) scale(5); opacity: 0; filter: blur(10px); }
+        }
+
+        /* Action Controls */
+        .actions {
+            display: flex;
+            gap: 20px;
+            z-index: 20;
+        }
+
+        .action-btn {
+            background: #ff4081;
+            border: none;
+            color: white;
+            padding: 15px 35px;
+            border-radius: 50px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            font-family: 'Poppins', sans-serif;
+            cursor: pointer;
+            box-shadow: 0 8px 25px rgba(255, 64, 129, 0.4);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .action-btn:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 12px 30px rgba(255, 64, 129, 0.6);
+            background: #f50057;
+        }
+
+        .action-btn:active {
+            transform: scale(0.95);
+        }
+
+        #reset-btn {
+            background: #00e676;
+            box-shadow: 0 8px 25px rgba(0, 230, 118, 0.4);
+        }
+        #reset-btn:hover {
+            background: #00c853;
+            box-shadow: 0 12px 30px rgba(0, 230, 118, 0.6);
+        }
+
+        /* Clickable DOM Balloon Styles */
+        .balloon {
+            position: absolute;
+            width: 60px;
+            height: 75px;
+            border-radius: 50% 50% 50% 50% / 40% 40% 60% 60%;
+            cursor: pointer;
+            pointer-events: auto;
+            animation: rise 10s linear infinite, sway 3s ease-in-out infinite alternate;
+        }
+
+        .balloon::before {
+            content: "";
+            position: absolute;
+            bottom: -8px;
+            left: 26px;
+            border-left: 5px solid transparent;
+            border-right: 5px solid transparent;
+            border-bottom: 8px solid currentColor;
+            opacity: 0.8;
+        }
+
+        .balloon-string {
+            position: absolute;
+            bottom: -50px;
+            left: 29px;
+            width: 2px;
+            height: 50px;
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        @keyframes rise {
+            0% { transform: translateY(105vh); }
+            100% { transform: translateY(-20vh); }
+        }
+
+        @keyframes sway {
+            0% { margin-left: -20px; }
+            100% { margin-left: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="magic-canvas"></canvas>
+    <div id="balloon-container"></div>
+
+    <div class="controls">
+        <button id="music-toggle" class="btn" title="Toggle Music and Unmute Audio System">🎵 Play / Unmute</button>
+    </div>
+
+    <div class="main-stage">
+        
+        <div class="message-box">
+            <h1 class="typewriter" id="typing-text"></h1>
+        </div>
+
+        <div class="cake-wrapper" id="cake" title="Click me to blow the candles!">
+            <div class="plate"></div>
+            <div class="cake">
+                <div class="layer layer-bottom"></div>
+                <div class="layer layer-top">
+                    <div class="icing"></div>
+                    <div class="icing-drip drip-1"></div>
+                    <div class="icing-drip drip-2"></div>
+                    <div class="icing-drip drip-3"></div>
+                    <div class="icing-drip drip-4"></div>
+                    <div class="icing-drip drip-5"></div>
+                    
+                    <div class="candles">
+                        <div class="candle" id="candle-1">
+                            <div class="wick"></div>
+                            <div class="flame"></div>
+                            <div class="smoke"></div>
+                        </div>
+                        <div class="candle" id="candle-2">
+                            <div class="wick"></div>
+                            <div class="flame"></div>
+                            <div class="smoke"></div>
+                        </div>
+                        <div class="candle" id="candle-3">
+                            <div class="wick"></div>
+                            <div class="flame"></div>
+                            <div class="smoke"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="actions">
+            <button id="blow-btn" class="action-btn">🌬️ Blow Candles!</button>
+            <button id="reset-btn" class="action-btn" style="display:none;">🔄 Reset Party!</button>
+        </div>
+    </div>
+
+    <script>
+        /**
+         * 🎵 WEB AUDIO API SYNTHESIZER
+         * Generates all audio procedurally. No network fallback required!
+         */
+        class SoundEngine {
+            constructor() {
+                this.ctx = null;
+                this.isMuted = true;
+                this.melodyPlaying = false;
+                this.tempo = 140; 
+                this.melodyIndex = 0;
+                this.melodyTimer = null;
+
+                // Happy Birthday Frequencies [Note, Duration (beats)]
+                this.song = [
+                    ['G4', 0.5], ['G4', 0.5], ['A4', 1], ['G4', 1], ['C5', 1], ['B4', 2],
+                    ['G4', 0.5], ['G4', 0.5], ['A4', 1], ['G4', 1], ['D5', 1], ['C5', 2],
+                    ['G4', 0.5], ['G4', 0.5], ['G5', 1], ['E5', 1], ['C5', 1], ['B4', 1], ['A4', 2],
+                    ['F5', 0.5], ['F5', 0.5], ['E5', 1], ['C5', 1], ['D5', 1], ['C5', 2]
+                ];
+
+                this.noteFreqs = {
+                    'G4': 392.00, 'A4': 440.00, 'B4': 493.88, 'C5': 523.25, 
+                    'D5': 587.33, 'E5': 659.25, 'F5': 698.46, 'G5': 783.99
+                };
+            }
+
+            init() {
+                if (!this.ctx) {
+                    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                if (this.ctx.state === 'suspended') {
+                    this.ctx.resume();
+                }
+            }
+
+            playMelody() {
+                this.init();
+                if (this.isMuted || this.melodyPlaying) return;
+                
+                this.melodyPlaying = true;
+                this.melodyIndex = 0;
+                this.playNextNote();
+            }
+
+            playNextNote() {
+                if (!this.melodyPlaying || this.isMuted) return;
+
+                if (this.melodyIndex >= this.song.length) {
+                    this.melodyIndex = 0; // Loop
+                }
+
+                const [note, duration] = this.song[this.melodyIndex];
+                const freq = this.noteFreqs[note];
+                const durationInSeconds = duration * (60 / this.tempo);
+
+                this.synthNote(freq, durationInSeconds);
+
+                this.melodyIndex++;
+                this.melodyTimer = setTimeout(() => this.playNextNote(), durationInSeconds * 1000);
+            }
+
+            synthNote(freq, duration) {
+                if (!this.ctx) return;
+                
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+
+                osc.type = 'sine'; // Warm chip-tune sound
+                osc.frequency.value = freq;
+
+                gain.gain.setValueAtTime(0, this.ctx.currentTime);
+                gain.gain.linearRampToValueAtTime(0.15, this.ctx.currentTime + 0.02);
+                gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + duration);
+
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+
+                osc.start();
+                osc.stop(this.ctx.currentTime + duration);
+            }
+
+            stopMelody() {
+                this.melodyPlaying = false;
+                clearTimeout(this.melodyTimer);
+            }
+
+            playPop() {
+                this.init();
+                if (this.isMuted) return;
+
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(800, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(100, this.ctx.currentTime + 0.1);
+
+                gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
+                gain.gain.linearRampToValueAtTime(0.0, this.ctx.currentTime + 0.1);
+
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.1);
+            }
+
+            playCheer() {
+                this.init();
+                if (this.isMuted) return;
+
+                // Simple noise-burst synthesis for applause/cheer
+                const bufferSize = this.ctx.sampleRate * 2.0; // 2 seconds
+                const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+                const data = buffer.getChannelData(0);
+
+                for (let i = 0; i < bufferSize; i++) {
+                    data[i] = Math.random() * 2 - 1; // White noise
+                }
+
+                const noise = this.ctx.createBufferSource();
+                noise.buffer = buffer;
+
+                const filter = this.ctx.createBiquadFilter();
+                filter.type = 'bandpass';
+                filter.frequency.value = 1000;
+                filter.Q.value = 1;
+
+                const gain = this.ctx.createGain();
+                gain.gain.setValueAtTime(0, this.ctx.currentTime);
+                gain.gain.linearRampToValueAtTime(0.15, this.ctx.currentTime + 0.5);
+                gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 2.0);
+
+                noise.connect(filter);
+                filter.connect(gain);
+                gain.connect(this.ctx.destination);
+
+                noise.start();
+                noise.stop(this.ctx.currentTime + 2.0);
+            }
+        }
+
+        const audio = new SoundEngine();
+        const musicToggle = document.getElementById('music-toggle');
+
+        musicToggle.addEventListener('click', () => {
+            audio.init();
+            if (audio.isMuted) {
+                audio.isMuted = false;
+                musicToggle.innerText = "🔊 Mute Music";
+                musicToggle.style.background = "#fff";
+                musicToggle.style.color = "#ff4b72";
+                audio.playMelody();
+            } else {
+                audio.isMuted = true;
+                musicToggle.innerText = "🔇 Unmute Audio";
+                musicToggle.style.background = "rgba(255, 255, 255, 0.2)";
+                musicToggle.style.color = "white";
+                audio.stopMelody();
+            }
+        });
+
+
+        /**
+         * 🌌 CANVAS RENDERING ENGINE
+         * Handles Confetti, Sparkles, Shooting Stars, and Fireworks particles in one animation loop.
+         */
+        const canvas = document.getElementById('magic-canvas');
+        const ctx = canvas.getContext('2d');
+
+        let width = canvas.width = window.innerWidth;
+        let height = canvas.height = window.innerHeight;
+
+        window.addEventListener('resize', () => {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        });
+
+        const confetti = [];
+        const sparkles = [];
+        const fireworks = [];
+        const shootingStars = [];
+
+        class Confetti {
+            constructor() {
+                this.x = Math.random() * width;
+                this.y = Math.random() * -height;
+                this.size = Math.random() * 8 + 6;
+                this.speed = Math.random() * 3 + 2;
+                this.color = `hsl(${Math.random() * 360}, 100%, 60%)`;
+                this.tilt = Math.random() * 10 - 5;
+                this.tiltAngle = 0;
+            }
+
+            update() {
+                this.y += this.speed;
+                this.tiltAngle += 0.1;
+                this.tilt = Math.sin(this.tiltAngle) * 12;
+         
